@@ -1,17 +1,29 @@
 <?php
 namespace Podlove\DigiMember;
 
-add_action( 'wp_ajax_podlove-digimember-resume-subscription', '\Podlove\DigiMember\resume_subscription' );
+add_action('wp_ajax_podlove-digimember-resume-subscription', '\Podlove\DigiMember\resume_subscription');
+add_action('wp_ajax_podlove-digimember-cancel-subscription', '\Podlove\DigiMember\cancel_subscription');
 
 function resume_subscription() {
+	manage_subscription('startRebilling');
+}
 
-	$purchase_id = filter_input(INPUT_POST, 'purchaseid');
+function cancel_subscription() {
+	manage_subscription('stopRebilling');
+}
 
-	if (!$purchase_id)
+function manage_subscription($method) {
+
+	if (!in_array($method, ['startRebilling', 'stopRebilling']))
+		die("Must be one of: 'startRebilling', 'stopRebilling'");
+
+	if (!$purchase_id = filter_input(INPUT_POST, 'purchaseid'))
 		exit;
 
-	$result = with_api(function($api) use ($purchase_id) {
-		return $api->startRebilling($purchase_id);
+	// fixme: check that current user owns purchase
+
+	$result = with_api(function($api) use ($purchase_id, $method) {
+		return call_user_func([$api, $method], $purchase_id);
 	});
 
 	respond_with_json($result);

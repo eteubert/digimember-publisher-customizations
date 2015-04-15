@@ -48,13 +48,14 @@ function render_purchase($purchase) {
 	$html.= '    <tr>';
 	$html.= '      <td>Status</td>';
 	$html.= '      <td>';
-	$html.=          $purchase->billing_status_msg . '&nbsp;';
-	$html.= '        <small>';
+	$html.= '        <span class="billing_status">' . $purchase->billing_status_msg. '</span>';
+	$html.= '        &nbsp;';
+	$html.= '        <small class="billing_modify">';
 
 	if ($purchase->billing_status === 'aborted') {
-		$html .= '<a href="" class="change_subscription resume_subscription" data-purchaseid="' . $purchase->id . '" data-ajaxurl="' . admin_url('admin-ajax.php') . '">resume support subscription</a>&nbsp;&nbsp;<i class="x-icon x-icon-spinner rotate hidden"></i>';
+		$html .= '<a href="" class="change_subscription resume_subscription" data-action="resume" data-purchaseid="' . $purchase->id . '" data-ajaxurl="' . admin_url('admin-ajax.php') . '">resume support subscription</a>&nbsp;&nbsp;<i class="x-icon x-icon-spinner rotate hidden"></i>';
 	} else {
-		$html .= '<a href="" class="change_subscription resume_subscription" data-purchaseid="' . $purchase->id . '" data-ajaxurl="' . admin_url('admin-ajax.php') . '">cancel support subscription</a>&nbsp;&nbsp;<i class="x-icon x-icon-spinner rotate hidden"></i>';
+		$html .= '<a href="" class="change_subscription cancel_subscription" data-action="cancel" data-purchaseid="' . $purchase->id . '" data-ajaxurl="' . admin_url('admin-ajax.php') . '">cancel support subscription</a>&nbsp;&nbsp;<i class="x-icon x-icon-spinner rotate hidden"></i>';
 	}
 
 	$html.= '        </small>';

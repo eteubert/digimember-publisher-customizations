@@ -7,7 +7,7 @@ function podlove_digimember_products() {
 
 	wp_enqueue_script(
 		'podlove_digimember_js',
-		plugins_url('podlove_digimember_support.js', __FILE__),
+		plugins_url('podlove_digimember_support.js', dirname(__FILE__)),
 		['jquery'],
 		'1.0.0',
 		true

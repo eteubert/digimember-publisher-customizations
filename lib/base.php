@@ -1,58 +1,5 @@
 <?php
-/**
- * Plugin Name: DigiMember Publisher Customizations
- * Plugin URI: http://www.digimember.net
- * Description: Shortcodes to extend DigiMember functionality.
- * Author: Eric Teubert
- * Version: 1.0
- * Author URI: http://www.digimember.net
- * License: MIT
-**/
-
 namespace Podlove\DigiMember;
-
-if (!file_exists(plugin_dir_path(__FILE__) . 'config.php'))
-	die('DigiMember Publisher Customizations: you need to create a config.php for the PODLOVE_DIGIMEMBER_API_KEY constant.');
-
-require_once plugin_dir_path(__FILE__) . 'api.php';
-require_once plugin_dir_path(__FILE__) . 'config.php';
-
-add_shortcode('podlove_digimember_products', '\Podlove\DigiMember\podlove_digimember_products');
-add_action( 'wp_ajax_podlove-digimember-resume-subscription', '\Podlove\DigiMember\resume_subscription' );
-
-function resume_subscription() {
-
-	$purchase_id = filter_input(INPUT_POST, 'purchaseid');
-
-	if (!$purchase_id)
-		exit;
-
-	$result = with_api(function($api) use ($purchase_id) {
-		return $api->startRebilling($purchase_id);
-	});
-
-	respond_with_json($result);
-}
-
-function podlove_digimember_products() {
-
-	wp_enqueue_script(
-		'podlove_digimember_js',
-		plugins_url('podlove_digimember_support.js', __FILE__),
-		['jquery'],
-		'1.0.0',
-		true
-	);
-
-	$purchase_codes = current_purchases();
-
-	if (count($purchase_codes) === 0)
-		return __('You did not buy anything yet. If you think this is wrong, please email <a href="mailto:' . get_option('admin_email') . '">' . get_option('admin_email') . '</a>.');
-
-	$purchases = purchases_by_code_list($purchase_codes);
-
-	return info_boxes() . implode("\n", array_map('\Podlove\DigiMember\render_purchase', $purchases));
-}
 
 function info_boxes() {
 	return '
@@ -193,12 +140,4 @@ function with_api($callback) {
 	$api->disconnect();
 
 	return $result;
-}
-
-function respond_with_json($result) {
-	header('Cache-Control: no-cache, must-revalidate');
-	header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-	header('Content-type: application/json');
-	echo json_encode($result);
-	die();
 }

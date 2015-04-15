@@ -25,34 +25,42 @@
 		}
 	};
 
-	$(".resume_subscription").on("click", function(e) {
+	$(".change_subscription").on("click", function(e) {
 		var data = $(this).data(),
 			ajaxurl = data.ajaxurl,
 			purchaseid = data.purchaseid,
+			action = data.action,
 			info = infobox("#subscription-infobox"),
 			error = infobox("#subscription-errorbox"),
-			spinner = $(this).parent().find("i.x-icon-spinner");
+			status_row = $(this).closest("tr")
+			spinner = status_row.find("i.x-icon-spinner");
 
+		e.preventDefault();
 		spinner.removeClass("hidden");
 
 		$.ajax({
 			url: ajaxurl,
 			method: "POST",
 			data: {
-				action: "podlove-digimember-resume-subscription",
+				action: "podlove-digimember-" + action + "-subscription",
 				purchaseid: purchaseid
 			}
 		}).done(function(result) {
 			info.setTitle(result.billing_status_msg);
 			info.setContent(result.note);
 			info.show();
+
+			if (result.modified.toUpperCase() === 'Y') {
+				status_row.find(".billing_status").text(result.billing_status_msg);
+				status_row.find(".billing_modify").addClass('hidden');
+			}
+
 		}).fail(function() {
 			error.show();
 		}).always(function() {
 			spinner.addClass("hidden");
 		})
 
-		e.preventDefault();
 	});
 
 })(jQuery);

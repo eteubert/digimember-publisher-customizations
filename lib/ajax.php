@@ -14,13 +14,20 @@ function cancel_subscription() {
 
 function manage_subscription($method) {
 
-	if (!in_array($method, ['startRebilling', 'stopRebilling']))
+	if (!in_array($method, ['startRebilling', 'stopRebilling'])) {
+		http_response_code(404);
 		die("Must be one of: 'startRebilling', 'stopRebilling'");
+	}
 
-	if (!$purchase_id = filter_input(INPUT_POST, 'purchaseid'))
+	if (!$purchase_id = filter_input(INPUT_POST, 'purchaseid')) {
+		http_response_code(404);
 		exit;
+	}
 
-	// fixme: check that current user owns purchase
+	if (!current_user_owns_purchase($purchase_id)) {
+		http_response_code(403);
+		exit;
+	}
 
 	$result = with_api(function($api) use ($purchase_id, $method) {
 		return call_user_func([$api, $method], $purchase_id);

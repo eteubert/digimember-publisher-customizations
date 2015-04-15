@@ -103,6 +103,10 @@ function format_currency($amount, $currency) {
 	return $amount . $currency;
 }
 
+function current_user_owns_purchase($purchase_id) {
+	return in_array($purchase_id, current_purchases());
+}
+
 /**
  * Get purchase codes for current user
  * 

@@ -32,6 +32,8 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+namespace Podlove\DigiMember;
+
 if (!class_exists( 'PodloveDigistoreApi' )) {
 
 define( 'DS_ERR_UNKNOWN',                  0 );
@@ -51,7 +53,7 @@ define( 'DS_LOG_ERROR', 'error' );
 define( 'DS_API_WRITABLE', 'writable' );
 define( 'DS_API_READONLY', 'readonly' );
 
-class PodloveDigistoreApiException extends Exception {
+class PodloveDigistoreApiException extends \Exception {
 }
 
 class PodloveDigistoreApi {

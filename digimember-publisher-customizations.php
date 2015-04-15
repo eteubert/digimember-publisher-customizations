@@ -9,27 +9,29 @@
  * License: MIT
 **/
 
+namespace Podlove\DigiMember;
+
 if (!file_exists(plugin_dir_path(__FILE__) . 'config.php'))
 	die('DigiMember Publisher Customizations: you need to create a config.php for the PODLOVE_DIGIMEMBER_API_KEY constant.');
 
 require_once plugin_dir_path(__FILE__) . 'api.php';
 require_once plugin_dir_path(__FILE__) . 'config.php';
 
-add_shortcode('podlove_digimember_products', 'podlove_digimember_products');
-add_action( 'wp_ajax_podlove-digimember-resume-subscription', 'podlove_digimember_resume_subscription' );
+add_shortcode('podlove_digimember_products', '\Podlove\DigiMember\podlove_digimember_products');
+add_action( 'wp_ajax_podlove-digimember-resume-subscription', '\Podlove\DigiMember\resume_subscription' );
 
-function podlove_digimember_resume_subscription() {
+function resume_subscription() {
 
 	$purchase_id = filter_input(INPUT_POST, 'purchaseid');
 
 	if (!$purchase_id)
 		exit;
 
-	$result = podlove_digimember_with_api(function($api) use ($purchase_id) {
+	$result = with_api(function($api) use ($purchase_id) {
 		return $api->startRebilling($purchase_id);
 	});
 
-	podlove_digimember_respond_with_json($result);
+	respond_with_json($result);
 }
 
 function podlove_digimember_products() {
@@ -42,17 +44,17 @@ function podlove_digimember_products() {
 		true
 	);
 
-	$purchase_codes = podlove_digimember_current_purchases();
+	$purchase_codes = current_purchases();
 
 	if (count($purchase_codes) === 0)
 		return __('You did not buy anything yet. If you think this is wrong, please email <a href="mailto:' . get_option('admin_email') . '">' . get_option('admin_email') . '</a>.');
 
-	$purchases = podlove_digimember_purchases_by_code_list($purchase_codes);
+	$purchases = purchases_by_code_list($purchase_codes);
 
-	return podlove_digimember_info_boxes() . implode("\n", array_map('podlove_digimember_render_purchase', $purchases));
+	return info_boxes() . implode("\n", array_map('\Podlove\DigiMember\render_purchase', $purchases));
 }
 
-function podlove_digimember_info_boxes() {
+function info_boxes() {
 	return '
 	<div id="subscription-errorbox" class="x-alert x-alert-danger x-alert-block hidden">
 		<button type="button" class="close" style="right: -12px">×</button>
@@ -72,7 +74,7 @@ function podlove_digimember_info_boxes() {
 	</div>';
 }
 
-function podlove_digimember_render_purchase($purchase) {
+function render_purchase($purchase) {
 
 	$product_name = function($item) {
 		return $item->product_name . ' &#x2A09; ' . $item->quantity;
@@ -116,7 +118,7 @@ function podlove_digimember_render_purchase($purchase) {
 	$html.= '      <td>Total</td>';
 	$html.= '      <td>';
 	if ($purchase->billing_status === 'aborted') { $html .= '<del>'; }
-	$html.=          podlove_digimember_format_currency($purchase->amount, $purchase->currency) . ' per month';
+	$html.=          format_currency($purchase->amount, $purchase->currency) . ' per month';
 	$html.= '       <small>(last payment: ' . date_i18n(get_option('date_format'), strtotime($latest_transaction->created_at)) . ')</small>';
 	if ($purchase->billing_status === 'aborted') { $html .= '</del>'; }
 	$html.= '      </td>';
@@ -140,7 +142,7 @@ function podlove_digimember_render_purchase($purchase) {
 	return $html;
 }
 
-function podlove_digimember_format_currency($amount, $currency) {
+function format_currency($amount, $currency) {
 
 	if (strtoupper($currency) == 'EUR') {
 		$currency = '&#x20AC;';
@@ -158,12 +160,12 @@ function podlove_digimember_format_currency($amount, $currency) {
  * 
  * @return  array
  */
-function podlove_digimember_current_purchases() {
+function current_purchases() {
 	global $wpdb;
 
 	$current_user = wp_get_current_user();
 
-	if ( !($current_user instanceof WP_User) )
+	if ( !($current_user instanceof \WP_User) )
 		return [];
 
 	return $wpdb->get_col(
@@ -174,16 +176,16 @@ function podlove_digimember_current_purchases() {
 	);
 }
 
-function podlove_digimember_purchases_by_code_list($codes) {
-	return podlove_digimember_with_api(function($api) use ($codes) {
+function purchases_by_code_list($codes) {
+	return with_api(function($api) use ($codes) {
 		return array_map(function($code) use ($api) {
 			return $api->getPurchase($code);
 		}, $codes);
 	});
 }
 
-function podlove_digimember_with_api($callback) {
-	$api = PodloveDigistoreApi::connect(PODLOVE_DIGIMEMBER_API_KEY);
+function with_api($callback) {
+	$api = \Podlove\DigiMember\PodloveDigistoreApi::connect(PODLOVE_DIGIMEMBER_API_KEY);
 	$api->setLanguage('en');
 
 	$result = $callback($api);
@@ -193,7 +195,7 @@ function podlove_digimember_with_api($callback) {
 	return $result;
 }
 
-function podlove_digimember_respond_with_json($result) {
+function respond_with_json($result) {
 	header('Cache-Control: no-cache, must-revalidate');
 	header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
 	header('Content-type: application/json');
